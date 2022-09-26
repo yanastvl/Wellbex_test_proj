@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "esnext",
+    "target": "es6",
+    "module": "commonjs",
+    "jsx": "preserve",
     "baseUrl": "./",
     "moduleResolution": "node",
     "paths": {
