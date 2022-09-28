@@ -52,7 +52,7 @@ export default {
     methods: {
         setPage(page) {
             this.currentPage = page;
-            this.$emit('filter', this.currentPage);
+            this.$emit('setItemsOnPage', this.currentPage);
         },
         prevPage() {
             this.setPage(this.currentPage -= 1);

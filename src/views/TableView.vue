@@ -4,7 +4,6 @@
   
   <script>
   import Table from "../components/Table.vue"
-  import Pagination from "../components/Pagination.vue"
   
   export default {
       data() {
@@ -12,7 +11,7 @@
               app: "app"
           };
       },
-      components: { Table, Pagination }
+      components: { Table }
     }
   </script>
   

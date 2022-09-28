@@ -1,13 +1,19 @@
 <template>
     <div>
-        <Sort :items="items" @filter="filter"></Sort>
+        <FilterItems :items="items" @filter="filter"></FilterItems>
         <table>
             <thead>
                 <tr>
                     <th>Дата</th>
-                    <th @click="sort('name')">Название</th>
-                    <th @click="sort('amount')">Количество</th>
-                    <th @click="sort('distance')">Расстояние</th>
+                    <th  >
+                        <a @click="sort('name')" class="sort_table">Название</a>
+                    </th>
+                    <th >
+                        <a @click="sort('amount')" class="sort_table">Количество</a>
+                    </th>
+                    <th >
+                        <a @click="sort('distance')" class="sort_table">Расстояние</a>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -18,15 +24,15 @@
                 </tr>
             </tbody>
         </table>
-        <Pagination :allObjectsNum="allObjectsNum" :pageFromFilter="page" @filter="filter"></Pagination>
+        <Pagination :allObjectsNum="allObjectsNum" :pageFromFilter="page" @setItemsOnPage="setItemsOnPage"></Pagination>
     </div>
 </template>
 
 <script>
-import Sort from "../components/Sort.vue"
+import FilterItems from "./FilterItems.vue"
 import Pagination from "../components/Pagination.vue"
 
-const url = 'http://localhost:3210/test'
+const url = 'http://localhost:3210/'
 
   export default {
       data() {
@@ -40,24 +46,40 @@ const url = 'http://localhost:3210/test'
                 'amount',
                 'distance',
             ],
-            filteredResult: null
+            result: null,
+            sorted: null,
+            sortByField: null
             }
       },
       mounted() {
         fetch(`${url}`)
             .then(res => res.json())
             .then((res) => {
+                this.result = res;
                 this.items = res.slice(0, 5);
                 this.allObjectsNum = res.length;
             })
       },
       methods: {
-        sort(field) {
-            if (field == 'name') {
-                this.items.sort((a, b) => a[field].localeCompare(b[field]))
+        setItemsOnPage(page) {
+            this.items = this.result.slice((page-1)*5, (page-1)*5+5);
+        },
+        sortDirect(field) {
+            this.result.sort((a,b) => a[field] > b[field] ? 1 : -1);
+        },
+        sortReverse(field) {
+            this.result.sort((a,b) => b[field] > a[field] ? 1 : -1);
+        },
+        sort(field){
+            if (!this.sorted || this.sorted == 'reverse') {
+                this.sortDirect(field);
+                this.sorted = 'direct';
             } else {
-                this.items = this.items.sort((a,b) =>  a[field]-b[field] )
+                this.sortReverse(field);
+                this.sorted = 'reverse';
             }
+            this.setItemsOnPage(this.page);
+            this.sortByField = field;
         },
         filter(page, operator, field, amount) {
             const operations = {
@@ -68,28 +90,28 @@ const url = 'http://localhost:3210/test'
             };
 
             this.page = page;
-            const realPage = page - 1;
 
             fetch(`${url}`)
                 .then(res => res.json())
                 .then((res) => {
+                    this.result = res;
                     if (operator) {
-                        this.filteredResult = res.filter(i => operations[operator](i[field], amount));
-                    } else if (!this.filteredResult) {
-                        this.filteredResult = res;
+                        this.result = res.filter(i => operations[operator](i[field], amount));
                     }
-                    this.items = this.filteredResult.slice(realPage*5, realPage*5+5);
-                    this.allObjectsNum = this.filteredResult.length;
-                    this.page = page;
+                    if (this.sortByField) {
+                        this.sortDirect(field) ? this.sorted == 'direct' : this.sortReverse(field);
+                    }
+                    this.setItemsOnPage(page);
+                    this.allObjectsNum = this.result.length;
                 })
         },
       },
-      components: { Sort, Pagination }
+      components: { FilterItems, Pagination }
     }
 </script>
 
 <style  lang="scss" scoped>
-    table {
+  table {
   font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
   font-size: 16px;
   background: white;
@@ -107,6 +129,7 @@ const url = 'http://localhost:3210/test'
     border-top: 4px solid #aabcfe;
     border-bottom: 1px solid #fff;
     color: #039;
+    vertical-align: middle;
   }
 
   td {
@@ -116,6 +139,32 @@ const url = 'http://localhost:3210/test'
     color: #669;
     border-top: 1px solid transparent;
     padding: 8px;
+
   }
 }
+
+.sort_table{
+    position: relative;
+}
+
+.sort_table:before,
+.sort_table:after {
+	border: 4px solid transparent;
+	content: "";
+	display: block;
+	height: 0;
+    right: -20px;
+	top: 50%;
+	position: absolute;
+	width: 0;
+}
+.sort_table:before {
+	border-bottom-color: #039;
+	margin-top: -9px;
+}
+.sort_table:after {
+	border-top-color: #039;
+	margin-top: 1px;
+}
+
 </style>

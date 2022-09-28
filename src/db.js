@@ -12,7 +12,7 @@ const db = mysql.createPool({
     database: 'heroku_1bf63e752039211'
 });
 
-app.get('/test', (req, res) => {
+app.get('/', (req, res) => {
     db.query('SELECT * FROM test', (err, result) => {
         if (err) {
             console.error(err);
