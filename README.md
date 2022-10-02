@@ -5,6 +5,7 @@
 ## Project setup
 ```
 npm install
+node db.js
 ```
 
 ### Compiles and hot-reloads for development
